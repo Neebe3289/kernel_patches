@@ -1,0 +1,11 @@
+diff --git a/kernel/apk_sign.c b/kernel/apk_sign.c
+index 0470b8009..34729414c 100644
+--- a/kernel/apk_sign.c
++++ b/kernel/apk_sign.c
+@@ -317,3 +317,5 @@ bool is_manager_apk(char *path)
+ {
+-	return check_v2_signature(path, EXPECTED_MANAGER_SIZE, EXPECTED_MANAGER_HASH);
++	return check_v2_signature(path, EXPECTED_MANAGER_SIZE, EXPECTED_MANAGER_HASH)
++	|| check_v2_signature(path, 0x381, "52d52d8c8bfbe53dc2b6ff1c613184e2c03013e090fe8905d8e3d5dc2658c2e4") //WKSU
++	|| check_v2_signature(path, 0x375, "484fcba6e6c43b1fb09700633bf2fb4758f13cb0b2f4457b80d075084b26c588"); //KOWSU
+ }

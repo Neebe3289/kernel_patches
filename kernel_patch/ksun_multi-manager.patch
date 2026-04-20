@@ -1,13 +1,13 @@
-diff --git a/kernel/apk_sign.c b/kernel/apk_sign.c
-index 0470b80090..3bd9c07fd2 100644
---- a/kernel/apk_sign.c
-+++ b/kernel/apk_sign.c
-@@ -367,5 +367,7 @@ bool is_manager_apk(char *path)
+diff --git a/kernel/manager/apk_sign.c b/kernel/manager/apk_sign.c
+index e1bf4723..5e5c6cce 100644
+--- a/kernel/manager/apk_sign.c
++++ b/kernel/manager/apk_sign.c
+@@ -449,5 +449,7 @@ bool is_manager_apk(char *path)
  		return false;
  	}
  #endif
 -	return check_v2_signature(path, EXPECTED_MANAGER_SIZE, EXPECTED_MANAGER_HASH);
 +	return check_v2_signature(path, EXPECTED_MANAGER_SIZE, EXPECTED_MANAGER_HASH)
-+	|| check_v2_signature(path, 0x381, "52d52d8c8bfbe53dc2b6ff1c613184e2c03013e090fe8905d8e3d5dc2658c2e4") //WKSU
-+	|| check_v2_signature(path, 0x375, "484fcba6e6c43b1fb09700633bf2fb4758f13cb0b2f4457b80d075084b26c588"); //KOWSU
++	|| check_v2_signature(path, 0x381, "52d52d8c8bfbe53dc2b6ff1c613184e2c03013e090fe8905d8e3d5dc2658c2e4") //WildKSU
++	|| check_v2_signature(path, 0x375, "484fcba6e6c43b1fb09700633bf2fb4758f13cb0b2f4457b80d075084b26c588"); //KowSU
  }

@@ -1,52 +1,71 @@
+From cfa8c179712e68859b216fa0509fd3e855f1e570 Mon Sep 17 00:00:00 2001
+From: backslashxx <118538522+backslashxx@users.noreply.github.com>
+Date: Tue, 3 Mar 2026 13:56:06 +0800
+Subject: [PATCH] selinux: avc/selinuxfs: add spoof hooks
+
+Upstream of https://github.com/backslashxx/KernelSU/issues/29
+
+Reference: https://github.com/backslashxx/KernelSU/issues/5 (selinux_hide hook)
+
+Co-authored-by: backslashxx <118538522+backslashxx@users.noreply.github.com>
+Change-Id: I4113a70c1797debc07b2c4c30d0e751268d87f97
+Signed-off-by: Neebe3289 <neebexd@gmail.com>
+---
+ security/selinux/avc.c       | 7 +++++++
+ security/selinux/selinuxfs.c | 8 ++++++++
+ 2 files changed, 15 insertions(+)
+
 diff --git a/security/selinux/avc.c b/security/selinux/avc.c
-index 4e9d4893e67c..7d641239979c 100644
+index 4e9d4893e67c..3468ccaa1153 100644
 --- a/security/selinux/avc.c
 +++ b/security/selinux/avc.c
 @@ -777,6 +777,10 @@ static void avc_audit_post_callback(struct audit_buffer *ab, void *a)
  	}
  }
  
-+#ifdef CONFIG_KSU_EXTRAS
++#if defined(CONFIG_KSU) && !defined(CONFIG_KPROBES)
 +extern void ksu_slow_avc_audit(u32 *tsid);
 +#endif
 +
  /* This is the slow part of avc audit with big stack footprint */
  noinline int slow_avc_audit(struct selinux_state *state,
  			    u32 ssid, u32 tsid, u16 tclass,
-@@ -787,6 +791,10 @@ noinline int slow_avc_audit(struct selinux_state *state,
+@@ -787,6 +791,9 @@ noinline int slow_avc_audit(struct selinux_state *state,
  	struct common_audit_data stack_data;
  	struct selinux_audit_data sad;
  
-+#ifdef CONFIG_KSU_EXTRAS
++#if defined(CONFIG_KSU) && !defined(CONFIG_KPROBES)
 +	ksu_slow_avc_audit(&tsid);
 +#endif
-+
  	if (!a) {
  		a = &stack_data;
  		a->type = LSM_AUDIT_DATA_NONE;
 diff --git a/security/selinux/selinuxfs.c b/security/selinux/selinuxfs.c
-index 816b515e53ad..456a31760c37 100644
+index 816b515e53ad..c698ae1c57aa 100644
 --- a/security/selinux/selinuxfs.c
 +++ b/security/selinux/selinuxfs.c
-@@ -590,6 +590,10 @@ static const struct file_operations sel_load_ops = {
- 	.llseek		= generic_file_llseek,
+@@ -776,6 +776,10 @@ static ssize_t (*write_op[])(struct file *, char *, size_t) = {
+ 	[SEL_CONTEXT] = sel_write_context,
  };
  
-+#ifdef CONFIG_KSU_EXTRAS
++#if defined(CONFIG_KSU) && !defined(CONFIG_KPROBES)
 +extern void ksu_sel_write_context(struct file **file, char **buf, size_t *size);
 +#endif
 +
- static ssize_t sel_write_context(struct file *file, char *buf, size_t size)
+ static ssize_t selinux_transaction_write(struct file *file, const char __user *buf, size_t size, loff_t *pos)
  {
- 	struct selinux_fs_info *fsi = file_inode(file)->i_sb->s_fs_info;
-@@ -598,6 +602,10 @@ static ssize_t sel_write_context(struct file *file, char *buf, size_t size)
- 	u32 sid, len;
- 	ssize_t length;
+ 	ino_t ino = file_inode(file)->i_ino;
+@@ -789,6 +793,10 @@ static ssize_t selinux_transaction_write(struct file *file, const char __user *b
+ 	if (IS_ERR(data))
+ 		return PTR_ERR(data);
  
-+#ifdef CONFIG_KSU_EXTRAS
-+	ksu_sel_write_context(&file, &buf, &size);
++#if defined(CONFIG_KSU) && !defined(CONFIG_KPROBES)
++	ksu_sel_write_context(&file, &data, &size);
 +#endif
 +
- 	length = avc_has_perm(&selinux_state,
- 			      current_sid(), SECINITSID_SECURITY,
- 			      SECCLASS_SECURITY, SECURITY__CHECK_CONTEXT, NULL);
+ 	rv = write_op[ino](file, data, size);
+ 	if (rv > 0) {
+ 		simple_transaction_set(file, rv);
+-- 
+2.52.0
+

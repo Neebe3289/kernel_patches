@@ -1,18 +1,20 @@
-From 3d1e2d6b3473d7eb5bfda0816a7fd40cc5370784 Mon Sep 17 00:00:00 2001
+From 8711d8454179d7969270f83f24bc87989e5b7dba Mon Sep 17 00:00:00 2001
 From: backslashxx <118538522+backslashxx@users.noreply.github.com>
 Date: Tue, 3 Mar 2026 13:56:06 +0800
-Subject: [PATCH] selinux: avc/hooks/selinuxfs: add spoof hooks
+Subject: [PATCH] selinux: avc/selinuxfs: add selinux_hide hooks
 
-Reference: https://github.com/backslashxx/KernelSU/issues/5 (selinux_hide hooks)
+This patch is partially based on upstream KernelSU implementation according to:
+- https://github.com/tiann/KernelSU/commit/0efe3cf0b6402c9cdcbe7f39a4c7131ee2a7a733
+- https://github.com/tiann/KernelSU/commit/3f388ef137c78e1ca0c92c0ada3b8717cdcc4302
 
+Reference: https://github.com/backslashxx/KernelSU/issues/5 [selinux_hide hooks]
 Co-authored-by: backslashxx <118538522+backslashxx@users.noreply.github.com>
-Change-Id: Ia2fac13bfbc365d17166c17e34e9a0b74b463749
+Change-Id: I88c6fe36325c1a55e9eb0e0db77e41dc02061368
 Signed-off-by: Neebe3289 <neebexd@gmail.com>
 ---
  security/selinux/avc.c       | 7 +++++++
- security/selinux/hooks.c     | 8 ++++++++
  security/selinux/selinuxfs.c | 8 ++++++++
- 3 files changed, 23 insertions(+)
+ 2 files changed, 15 insertions(+)
 
 diff --git a/security/selinux/avc.c b/security/selinux/avc.c
 index 4e9d4893e67c..3468ccaa1153 100644
@@ -39,32 +41,6 @@ index 4e9d4893e67c..3468ccaa1153 100644
  	if (!a) {
  		a = &stack_data;
  		a->type = LSM_AUDIT_DATA_NONE;
-diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index a7eb7a6c0723..7452057839f3 100644
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -6194,6 +6194,10 @@ static int selinux_getprocattr(struct task_struct *p,
- 	return error;
- }
- 
-+#ifdef CONFIG_KSU
-+extern int ksu_hide_setprocattr(const char *name, void *value, size_t size);
-+#endif
-+
- static int selinux_setprocattr(const char *name, void *value, size_t size)
- {
- 	struct task_security_struct *tsec;
-@@ -6202,6 +6206,10 @@ static int selinux_setprocattr(const char *name, void *value, size_t size)
- 	int error;
- 	char *str = value;
- 
-+#ifdef CONFIG_KSU
-+	ksu_hide_setprocattr(name, value, size);
-+#endif
-+
- 	/*
- 	 * Basic control over ability to set these attributes at all.
- 	 */
 diff --git a/security/selinux/selinuxfs.c b/security/selinux/selinuxfs.c
 index 816b515e53ad..c698ae1c57aa 100644
 --- a/security/selinux/selinuxfs.c
@@ -92,5 +68,5 @@ index 816b515e53ad..c698ae1c57aa 100644
  	if (rv > 0) {
  		simple_transaction_set(file, rv);
 -- 
-2.52.0
+2.54.0
 

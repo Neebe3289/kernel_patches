@@ -1,16 +1,23 @@
-From 8711d8454179d7969270f83f24bc87989e5b7dba Mon Sep 17 00:00:00 2001
+From ad85b2c87e4f7b3b5e94d841e6d297814be9427b Mon Sep 17 00:00:00 2001
 From: backslashxx <118538522+backslashxx@users.noreply.github.com>
 Date: Tue, 3 Mar 2026 13:56:06 +0800
 Subject: [PATCH] selinux: avc/selinuxfs: add selinux_hide hooks
 
-This patch is partially based on upstream KernelSU implementation according to:
-- https://github.com/tiann/KernelSU/commit/0efe3cf0b6402c9cdcbe7f39a4c7131ee2a7a733
-- https://github.com/tiann/KernelSU/commit/3f388ef137c78e1ca0c92c0ada3b8717cdcc4302
+Hook 'slow_avc_audit' to allow AVC audit filtering and 'selinux_transaction_write' to intercept SELinux context transactions through selinuxfs.
+Note that 'slow_avc_audit' hook is optional and can be handled from userspace.
+It is not part of standard KernelSU functionality but is included for implementations that require additional SELinux hiding support.
 
-Reference: https://github.com/backslashxx/KernelSU/issues/5 [selinux_hide hooks]
+This implementation follows the minimal manual hook approach
+documented by backslashxx and keeps CONFIG_KSU_LSM_SECURITY_HOOKS
+enabled without requiring additional setprocattr hooks.
+
+Reference:
+- https://github.com/backslashxx/KernelSU/issues/5 (slow_avc_audit and selinux_transaction_write hooks)
+
 Co-authored-by: backslashxx <118538522+backslashxx@users.noreply.github.com>
-Change-Id: I88c6fe36325c1a55e9eb0e0db77e41dc02061368
+Change-Id: Idfc79dc6bb936d05d5ebb1379a5ed3eb194b672e
 Signed-off-by: Neebe3289 <neebexd@gmail.com>
+[Neebe3289: rewrite commit message for clarity]
 ---
  security/selinux/avc.c       | 7 +++++++
  security/selinux/selinuxfs.c | 8 ++++++++
